@@ -1,8 +1,8 @@
 class ArticlesController < ApplicationController
-
+  skip_before_action :authorize!, only: [:index, :show]
+  
   def index
-    @articles = Article.all.order(created_at: :desc)
-      .page(params[:page]).per(params[:per_page] || 10)
+    @articles = Article.all.order(created_at: :desc).page(params[:page]).per(params[:per_page] || 10)
     render_serialized_data(@articles)
   end
 

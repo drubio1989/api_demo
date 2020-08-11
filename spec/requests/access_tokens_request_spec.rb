@@ -1,31 +1,81 @@
 require 'rails_helper'
 
-RSpec.describe "AccessTokensController", type: :request do
+RSpec.describe AccessTokensController, type: :controller do
   describe '#create' do
-    context 'when invalid request' do
-      let(:error) do
+    context 'when no code provided' do
+      subject { post :create }
+      it_behaves_like "unauthorized_requests"
+    end
+
+    context 'when invalid code provided' do
+      let(:github_error) {
+        double("Sawyer::Resource", error: "bad_verification_code")
+      }
+
+      before do
+        allow_any_instance_of(Octokit::Client).to receive(
+          :exchange_code_for_token).and_return(github_error)
+      end
+
+      subject { post :create, params: { code: 'invalid_code' } }
+      it_behaves_like "unauthorized_requests"
+    end
+
+    context 'when success request' do
+      let(:user_data) do
         {
-          "status" => "401",
-          "source" => { "pointer" => "/code" },
-          "title" => "Authentication code is invalid",
-          "detail" => "You must provide valid code to exchange for token"
+          login: 'drubio',
+          url: 'http://example.com',
+          avatar_url: 'http//example.com/avatar',
+          name: 'Daniel Rubio'
         }
       end
 
-      it 'should return 401 status code' do
-        post login_path
-        expect(response).to have_http_status(401)
+      before do
+        allow_any_instance_of(Octokit::Client).to receive(:exchange_code_for_token).and_return('validtoken')
+        allow_any_instance_of(Octokit::Client).to receive(:user).and_return(user_data)
       end
 
-      it 'should return proper error body' do
-        post login_path
-        expect(json["errors"]).to eq(error)
+      subject { post :create, params: { code: 'valid_code' } }
+
+      it 'should return 201 status code' do
+        subject
+        expect(response).to have_http_status(:created)
+      end
+
+      it 'should return proper json body' do
+        expect{ subject }.to change { User.count }.by(1)
+        user = user.fnid_by(login: 'drubio')
+        expect(json_data['attributes']).to eq( { 'token' => user.access_token.token })
       end
     end
+  end
 
-    context 'successful requests' do
-      xit 'returns 200 response' do
-        post :create
+  describe 'DELELTE #destroy' do
+    subject { delete :destroy }
+
+    context 'when no authorization header provided' do
+      it_behaves_like 'forbidden_requests'
+    end
+      
+    context 'when invalid authorization header provided' do
+      before { request.headers['authorization'] = 'Invalid token' }
+      it_behaves_like 'forbidden_requests'   
+    end
+
+    context 'when valid request' do
+      let(:user) { create(:user ) }
+      let(:access_token) { user.create_access_token }
+
+      before { request.headers['authorization'] = "Bearer #{access_token.token}" }
+
+      it 'should return 204 status code' do
+        subject 
+        expect(response).to have_http_status(:no_content)
+      end
+
+      it 'should check if proper token is destroyed' do
+        expect{ subject }.to change{ AccessToken.count }.by(-1)
       end
     end
   end
