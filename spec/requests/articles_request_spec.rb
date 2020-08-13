@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-RSpec.describe "ArticlesController", type: :request do
+RSpec.describe ArticlesController, type: :controller do
   describe '#index' do
-    subject { get articles_path }
+    subject { get :index }
 
     it 'returns ok response' do
       subject
@@ -29,6 +29,53 @@ RSpec.describe "ArticlesController", type: :request do
       subject
       expect(json_data.first["id"]).to eq(new_article.id.to_s)
       expect(json_data.last["id"]).to eq(old_article.id.to_s)
+    end
+  end
+
+  describe '#create' do
+    subject { post :create }
+
+    context 'when no code provided' do
+      it_behaves_like 'forbidden_requests'
+    end
+
+    context 'when invalid code provided' do  
+      before { request.headers['authorization'] = 'Invalid token' }
+      it_behaves_like 'forbidden_requests'
+    end
+
+    context 'when authorized' do
+      let(:access_token) { create(:access_token) }
+      before { request.headers['authorization'] = "Bearer #{access_token.token}" }
+      context 'when invalid parameters provided' do
+        let(:invalid_attributes) do
+          {
+            data: {
+              attributes: {
+                title: '',
+                content: ''
+              }
+            }
+          }
+        end
+
+        subject { post :create, params: invalid_attributes }
+
+        it 'should return 422 status code' do
+          subject
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it 'should return proper error json' do
+          subject
+          expect(json['errors']).to include({
+            "status" => "422",
+            "source" => { "pointer" => "/data/attributes/title" },
+            "title" =>  "can't be blank",
+            "detail" => "The title you provided cannot be blank."
+          })
+        end
+      end
     end
   end
 end

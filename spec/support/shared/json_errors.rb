@@ -6,7 +6,7 @@ shared_examples_for "unauthorized_requests" do
       "status" => "401",
       "source" => { "pointer" => "/code" },
       "title" =>  "Authentication code is invalid",
-      "detail" => "You must provide valid code in order to exchange it for token."
+      "detail" => "You must provide valid code to exchange for token"
     }
   end
 
@@ -25,9 +25,9 @@ shared_examples_for 'forbidden_requests' do
   let(:authorization_error) do
     {
       "status" => "403",
-      "source" => { "pointer" => "/headers/authorization" },
-      "title" =>  "Not authorized",
-      "detail" => "You have no right to access this resource."
+      "source" => { "pointer" => "/headers/authorizations" },
+      "title" =>  "You are not authorized",
+      "detail" => "You are not authorized to access this resource."
     }
   end
 
