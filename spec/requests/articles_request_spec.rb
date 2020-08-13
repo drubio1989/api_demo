@@ -63,6 +63,7 @@ RSpec.describe ArticlesController, type: :controller do
 
         it 'should return 422 status code' do
           subject
+          byebug
           expect(response).to have_http_status(:unprocessable_entity)
         end
 

@@ -14,9 +14,10 @@ class ArticlesController < ApplicationController
   def create
     article = Article.new(article_params)
     if article.valid?
+      # Does some stuff here.
     else
-      # byebug
-      render_serialized_error(article)
+      #TODO: Implement this with json api documentatoin
+      render json: article.errors, status: :unprocessable_entity
     end
   end
 
@@ -30,8 +31,7 @@ class ArticlesController < ApplicationController
     render json: ArticleSerializer.new(object).serializable_hash
   end
 
-  def render_serialized_error(object)
-    byebug
-    render json: ErrorSerializer.new(object).serializable_hash
-  end  
+  def render_serialized_error(errors)
+    render json: ErrorSerializer.new(errors).serializable_hash
+  end
 end
