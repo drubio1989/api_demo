@@ -3,5 +3,6 @@ FactoryBot.define do
     title { Faker::Book.title }
     content  { Faker::Lorem.paragraph }
     slug { Faker::Internet.slug }
+    user
   end
 end
