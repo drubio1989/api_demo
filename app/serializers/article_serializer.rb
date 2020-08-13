@@ -1,5 +1,5 @@
 class ArticleSerializer
   include FastJsonapi::ObjectSerializer
-  set_type :article
+  set_type :articles
   attributes :title, :content, :slug
 end
