@@ -19,8 +19,8 @@ class CommentsController < ApplicationController
 
   private 
 
-  def comments_params
-    params.require(:comment).permit(:content, :article_id)
+  def comment_params
+    params.require(:data).require(:attributes).permit(:content)
   end
 
   def render_serialized_data(object)
