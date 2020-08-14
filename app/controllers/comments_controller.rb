@@ -1,18 +1,29 @@
 class CommentsController < ApplicationController
-  before_action :set_comment, only: [:show, :update, :destroy]
+  skip_before_action :authorize!, only: [:index]
 
   def index
     @comments = Comment.all
-    render json: @comments
+    render_serialized_data(@comments, :ok)
   end
 
   def create
-    @comment = Comment.new(comment_params)
+    article = Article.find(params[:article_id])
+    @comment = article.comments.build(comments_params.merge(user: current_user))
 
     if @comment.save
       render json: @comment, status: :created, location: @comment
     else
       render json: @comment.errors, status: :unprocessable_entity
     end
+  end
+
+  private 
+
+  def comments_params
+    params.require(:comment).permit(:content, :article_id)
+  end
+
+  def render_serialized_data(object)
+    render json: CommentSerializer.new(object).serializable_hash, status: status
   end
 end
