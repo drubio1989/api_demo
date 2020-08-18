@@ -70,6 +70,7 @@ RSpec.describe CommentsController, type: :controller do
 
         it 'returns 201 status code' do
           subject
+          byebug
           expect(response).to have_http_status(:created)
         end
 
@@ -95,8 +96,7 @@ RSpec.describe CommentsController, type: :controller do
           expect(response).to have_http_status(:unprocessable_entity)
         end
 
-        it "renders a JSON response with errors for the new comment" do
-          subject
+        xit "renders a JSON response with errors for the new comment" do
           expect(json['errors']).to include({
             "source" => { "pointer" => "/data/attributes/content" },
             "detail" =>  "can't be blank"
