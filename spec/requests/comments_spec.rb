@@ -70,7 +70,6 @@ RSpec.describe CommentsController, type: :controller do
 
         it 'returns 201 status code' do
           subject
-          byebug
           expect(response).to have_http_status(:created)
         end
 
